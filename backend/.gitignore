@@ -1,0 +1,34 @@
+# === Spring Boot ===
+target/
+*.class
+*.jar
+*.war
+*.log
+
+# === Gradle / Maven ===
+.gradle/
+build/
+.mvn/
+!**/mvn/wrapper/**
+
+# === IntelliJ / Eclipse ===
+.idea/
+*.iws
+*.iml
+*.ipr
+*.classpath
+*.project
+.settings/
+
+# === React (frontend) ===
+node_modules/
+build/
+dist/
+.npm/
+.yarn/
+
+# === Environment / Secrets ===
+.env
+.env.local
+application.properties
+application.yml
