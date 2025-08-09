@@ -17,11 +17,13 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: 220295
           POSTGRES_DB: testify
+        ports:
+          - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U postgres -d testify"
-          --health-interval=5s
+          --health-cmd="pg_isready"
+          --health-interval=10s
           --health-timeout=5s
-          --health-retries=60
+          --health-retries=5
 
     steps:
       - name: Checkout
@@ -34,40 +36,14 @@ jobs:
           distribution: "oracle"
           cache: maven
 
-      - name: Wait for PostgreSQL
+      - name: Wait for PostgreSQL to be ready
         run: |
-          sudo apt-get update -y
+          sudo apt-get update
           sudo apt-get install -y postgresql-client
-          COUNT=0
-          until pg_isready -q -h postgres -p 5432 -U postgres -d testify; do
+          until pg_isready -h localhost -p 5432 -U postgres; do
             echo "Waiting for PostgreSQL..."
             sleep 2
-            COUNT=$((COUNT+1))
-            if [ $COUNT -ge 120 ]; then
-              echo "Timeout waiting for Postgres."
-              exit 1
-            fi
           done
-          echo "Postgres is ready."
-
-      - name: Debug Postgres if not healthy
-        run: |
-          set +e
-          pg_isready -h postgres -p 5432 -U postgres -d testify
-          READY=$?
-          set -e
-          if [ $READY -ne 0 ]; then
-            echo "Postgres not ready. Dumping container info & logs..."
-            docker ps -a || true
-            cid=$(docker ps -aq --filter "ancestor=postgres:14" | head -n1)
-            if [ -n "$cid" ]; then
-              echo "== Health status =="
-              docker inspect "$cid" --format '{{json .State.Health}}' || true
-              echo "== Last 200 logs =="
-              docker logs --tail=200 "$cid" || true
-            fi
-            exit 1
-          fi
 
       - name: Build with Maven
         working-directory: ./TestifyProject/backend/TestifyProject
