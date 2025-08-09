@@ -34,13 +34,40 @@ jobs:
           distribution: "oracle"
           cache: maven
 
-      - name: Wait for PostgreSQL
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y postgresql-client
-          until pg_isready -q -h postgres -p 5432 -U postgres -d testify; do
-            sleep 2
-          done
+- name: Wait for PostgreSQL (with debug)
+  run: |
+    sudo apt-get update -y
+    sudo apt-get install -y postgresql-client
+    # Thử 1 lần hiển thị lỗi thật (không quiet) để xem vì sao fail
+    set +e
+    pg_isready -h postgres -p 5432 -U postgres -d testify
+    RET=$?
+    set -e
+    if [ $RET -ne 0 ]; then
+      echo "pg_isready initial check failed, start waiting..."
+    fi
+
+    # Chờ tối đa ~3 phút (90 * 2s); bạn có thể tăng lên 10 phút nếu muốn
+    COUNT=0
+    until pg_isready -q -h postgres -p 5432 -U postgres -d testify; do
+      sleep 2
+      COUNT=$((COUNT+1))
+      if [ $COUNT -ge 90 ]; then
+        echo "Timeout waiting for Postgres. Dumping logs..."
+        # In danh sách container + log của postgres để chẩn đoán
+        docker ps -a
+        cid=$(docker ps -aq --filter "ancestor=postgres:14" | head -n1)
+        if [ -n "$cid" ]; then
+          echo "== Health =="
+          docker inspect "$cid" --format '{{json .State.Health}}' || true
+          echo "== Last 200 logs =="
+          docker logs --tail=200 "$cid" || true
+        fi
+        exit 1
+      fi
+    done
+    echo "Postgres is ready."
+
 
       - name: Build with Maven
         working-directory: ./TestifyProject/backend/TestifyProject
