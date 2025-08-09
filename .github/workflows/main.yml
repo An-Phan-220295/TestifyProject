@@ -15,20 +15,20 @@ jobs:
         image: postgres:14
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: 220295
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
           POSTGRES_DB: testify
-        # KHÔNG cần map port; dùng hostname "postgres" trong CI
+        # Không cần map port; dùng hostname "postgres"
         options: >-
           --health-cmd="pg_isready -U postgres -d testify"
-          --health-interval=10s
+          --health-interval=5s
           --health-timeout=5s
-          --health-retries=5
+          --health-retries=30
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Debug repo tree (optional)
+      - name: Show tree (debug)
         run: |
           ls -la
           echo "---- TestifyProject/backend/TestifyProject ----"
@@ -45,8 +45,8 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get install -y postgresql-client
-          until pg_isready -h postgres -p 5432 -U postgres -d testify; do
-            echo "Waiting for PostgreSQL..."
+          # quiet mode, không spam log
+          until pg_isready -q -h postgres -p 5432 -U postgres -d testify; do
             sleep 2
           done
 
@@ -55,7 +55,8 @@ jobs:
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/testify
           SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: 220295
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          # Tuỳ nhu cầu: update/validate/none
           SPRING_JPA_HIBERNATE_DDL_AUTO: update
         run: mvn -B clean install
 
@@ -64,6 +65,12 @@ jobs:
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/testify
           SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: 220295
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
           SPRING_PROFILES_ACTIVE: test
         run: mvn -B test
+
+      # (Optional) Seed database trước khi test nếu cần:
+      # - name: Seed DB
+      #   run: |
+      #     sudo apt-get install -y postgresql-client
+      #     psql "postgresql://postgres:${{ secrets.DB_PASSWORD }}@postgres:5432/testify" -f TestifyProject.sql
