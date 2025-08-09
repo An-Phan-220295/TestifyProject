@@ -54,11 +54,11 @@ jobs:
           SPRING_JPA_HIBERNATE_DDL_AUTO: update
         run: mvn -B clean install
 
-      - name: Run tests
-        working-directory: backend/TestifyProject
-        env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/testify
-          SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: 220295
-          SPRING_PROFILES_ACTIVE: test
-        run: mvn -B test
+      # - name: Run tests
+      #   working-directory: backend/TestifyProject
+      #   env:
+      #     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/testify
+      #     SPRING_DATASOURCE_USERNAME: postgres
+      #     SPRING_DATASOURCE_PASSWORD: 220295
+      #     SPRING_PROFILES_ACTIVE: test
+      #   run: mvn -B test
