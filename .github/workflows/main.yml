@@ -15,7 +15,7 @@ jobs:
         image: postgres:14
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          POSTGRES_PASSWORD: 220295
           POSTGRES_DB: testify
         options: >-
           --health-cmd="pg_isready -U postgres -d testify"
@@ -47,7 +47,7 @@ jobs:
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/testify
           SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          SPRING_DATASOURCE_PASSWORD: 220295
           SPRING_JPA_HIBERNATE_DDL_AUTO: update
         run: mvn -B clean install
 
@@ -56,6 +56,6 @@ jobs:
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/testify
           SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          SPRING_DATASOURCE_PASSWORD: 220295
           SPRING_PROFILES_ACTIVE: test
         run: mvn -B test
