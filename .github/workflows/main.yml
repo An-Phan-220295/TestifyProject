@@ -2,11 +2,9 @@ name: Testify Project
 
 on:
   push:
-    branches:
-      - develop
+    branches: [develop]
   pull_request:
-    branches:
-      - develop
+    branches: [develop]
 
 jobs:
   build:
@@ -19,35 +17,53 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: 220295
           POSTGRES_DB: testify
-        ports:
-          - 5432:5432
+        # KHÔNG cần map port; dùng hostname "postgres" trong CI
         options: >-
-          --health-cmd="pg_isready"
+          --health-cmd="pg_isready -U postgres -d testify"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
 
     steps:
-      - name: Check out source code
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Debug repo tree (optional)
+        run: |
+          ls -la
+          echo "---- TestifyProject/backend/TestifyProject ----"
+          ls -la TestifyProject/backend/TestifyProject || true
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: "17"
           distribution: "oracle"
+          cache: maven
 
-      - name: Wait for PostgreSQL to be ready
+      - name: Wait for PostgreSQL
         run: |
-          sudo apt-get update
+          sudo apt-get update -y
           sudo apt-get install -y postgresql-client
-          until pg_isready -h localhost -p 5432 -U postgres; do
+          until pg_isready -h postgres -p 5432 -U postgres -d testify; do
             echo "Waiting for PostgreSQL..."
             sleep 2
           done
 
       - name: Build with Maven
-        run: mvn clean install
+        working-directory: ./TestifyProject/backend/TestifyProject
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/testify
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: 220295
+          SPRING_JPA_HIBERNATE_DDL_AUTO: update
+        run: mvn -B clean install
 
       - name: Run tests
-        run: mvn test
+        working-directory: ./TestifyProject/backend/TestifyProject
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/testify
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: 220295
+          SPRING_PROFILES_ACTIVE: test
+        run: mvn -B test
