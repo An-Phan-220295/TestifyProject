@@ -46,7 +46,7 @@ jobs:
           done
 
       - name: Build with Maven
-        working-directory: ./TestifyProject/backend
+        working-directory: ../backend/TestifyProject
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/testify
           SPRING_DATASOURCE_USERNAME: postgres
