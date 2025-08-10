@@ -60,8 +60,11 @@ jobs:
       - name: Run tests
         working-directory: backend/TestifyProject
         env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/testify
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testify
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: 220295
-          SPRING_PROFILES_ACTIVE: test
+          SPRING_JPA_HIBERNATE_DDL_AUTO: update
+          SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+          # (tuỳ chọn) ép driver, đôi khi giúp Hibernate bớt “đoán”
+          SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
         run: mvn -B test
