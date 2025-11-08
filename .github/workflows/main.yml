@@ -6,6 +6,14 @@ on:
   pull_request:
     branches: [develop]
 
+jobs:name: Testify Project
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,6 +33,73 @@ jobs:
           --health-timeout=5s
           --health-retries=5
 
+    env:
+      # ---------- 🔑 JWT CONFIGURATION ----------
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}       # 🔒 lấy từ GitHub Secrets
+      JWT_ISSUER: "Testify CI"                    # hoặc giá trị khác
+      JWT_AT_MIN: 60                              # access token TTL = 60 phút
+      JWT_RT_DAYS: 7                              # refresh token TTL = 7 ngày
+
+      # ---------- 🗄️ DATABASE CONFIG ----------
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testify
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 220295
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "oracle"
+          cache: maven
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          until pg_isready -h localhost -p 5432 -U postgres; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+      - name: Build with Maven
+        working-directory: backend/TestifyProject
+        run: mvn -B clean install
+
+      - name: Run tests
+        working-directory: backend/TestifyProject
+        run: mvn -B test
+
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: 220295
+          POSTGRES_DB: testify
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+     env:
+      # ---------- 🔑 JWT CONFIGURATION ----------
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}        # <-- Đặt secret thật trong GitHub Secrets
+      JWT_ISSUER: "Testify CI"                     # <-- có thể để cố định
+      JWT_AT_MIN: 60                               # access token TTL = 60 phút
+      JWT_RT_DAYS: 7       
+      
     steps:
       - name: Checkout
         uses: actions/checkout@v4
