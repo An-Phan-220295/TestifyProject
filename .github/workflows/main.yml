@@ -37,8 +37,7 @@ jobs:
 
     env:
       # ---------- 🔑 JWT CONFIGURATION ----------
-      # Gắn cứng secret để tránh lỗi "app.jwt.secret is null/blank"
-      JWT_SECRET: U2VjdXJlS2V5Rm9yVGVzdGlmeVByb2plY3QyMDI1MTExMQ==    # <-- base64 64 ký tự
+      JWT_SECRET: U2VjdXJlS2V5Rm9yVGVzdGlmeVByb2plY3QyMDI1MTExMQ==  # Base64 secret (64+ ký tự)
       JWT_ISSUER: "Testify CI"
       JWT_AT_MIN: 60
       JWT_RT_DAYS: 7
@@ -55,6 +54,7 @@ jobs:
       SPRING_DATA_REDIS_DATABASE: 0
       SPRING_DATA_REDIS_HOST: localhost
       SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_PASSWORD:
       SPRING_DATA_REDIS_TIMEOUT: 60000
 
     steps:
@@ -68,7 +68,7 @@ jobs:
           distribution: "oracle"
           cache: maven
 
-      - name: Wait for PostgreSQL and Redis to be ready
+      - name: Wait for PostgreSQL and Redis
         run: |
           sudo apt-get update
           sudo apt-get install -y postgresql-client redis-tools
@@ -82,6 +82,13 @@ jobs:
             sleep 2
           done
           echo "✅ Redis is ready!"
+
+      - name: Debug environment
+        run: |
+          echo "JWT_ISSUER=$JWT_ISSUER"
+          echo "JWT_SECRET length: ${#JWT_SECRET}"
+          echo "REDIS HOST: $SPRING_DATA_REDIS_HOST"
+          redis-cli -h localhost -p 6379 ping
 
       - name: Build with Maven
         working-directory: backend/TestifyProject
