@@ -25,9 +25,20 @@ jobs:
           --health-timeout=5s
           --health-retries=5
 
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     env:
       # ---------- 🔑 JWT CONFIGURATION ----------
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}       # Lấy từ GitHub Secrets
+      # Gắn cứng secret để tránh lỗi "app.jwt.secret is null/blank"
+      JWT_SECRET: U2VjdXJlS2V5Rm9yVGVzdGlmeVByb2plY3QyMDI1MTExMQ==    # <-- base64 64 ký tự
       JWT_ISSUER: "Testify CI"
       JWT_AT_MIN: 60
       JWT_RT_DAYS: 7
@@ -40,6 +51,12 @@ jobs:
       SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
 
+      # ---------- 🔴 REDIS CONFIG ----------
+      SPRING_DATA_REDIS_DATABASE: 0
+      SPRING_DATA_REDIS_HOST: localhost
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_TIMEOUT: 60000
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -51,14 +68,20 @@ jobs:
           distribution: "oracle"
           cache: maven
 
-      - name: Wait for PostgreSQL to be ready
+      - name: Wait for PostgreSQL and Redis to be ready
         run: |
           sudo apt-get update
-          sudo apt-get install -y postgresql-client
+          sudo apt-get install -y postgresql-client redis-tools
+          echo "⏳ Waiting for PostgreSQL..."
           until pg_isready -h localhost -p 5432 -U postgres; do
-            echo "Waiting for PostgreSQL..."
             sleep 2
           done
+          echo "✅ PostgreSQL is ready!"
+          echo "⏳ Waiting for Redis..."
+          until redis-cli -h localhost -p 6379 ping | grep PONG; do
+            sleep 2
+          done
+          echo "✅ Redis is ready!"
 
       - name: Build with Maven
         working-directory: backend/TestifyProject
