@@ -18,7 +18,7 @@ public class TestSubmission extends BaseEntity {
     private Long id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_email", nullable = false)
     private User user;
 
     @ManyToOne(optional = false)
