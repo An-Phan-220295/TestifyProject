@@ -35,28 +35,6 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-    env:
-      # ---------- 🔑 JWT CONFIGURATION ----------
-      JWT_SECRET: U2VjdXJlS2V5Rm9yVGVzdGlmeVByb2plY3QyMDI1MTExMQ==  # Base64 secret (64+ ký tự)
-      JWT_ISSUER: "Testify CI"
-      JWT_AT_MIN: 60
-      JWT_RT_DAYS: 7
-
-      # ---------- 🗄️ DATABASE CONFIG ----------
-      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testify
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: 220295
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
-      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
-
-      # ---------- 🔴 REDIS CONFIG ----------
-      SPRING_DATA_REDIS_DATABASE: 0
-      SPRING_DATA_REDIS_HOST: localhost
-      SPRING_DATA_REDIS_PORT: 6379
-      SPRING_DATA_REDIS_PASSWORD:
-      SPRING_DATA_REDIS_TIMEOUT: 60000
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -83,17 +61,51 @@ jobs:
           done
           echo "✅ Redis is ready!"
 
-      - name: Debug environment
+      - name: Debug environment (optional)
         run: |
-          echo "JWT_ISSUER=$JWT_ISSUER"
           echo "JWT_SECRET length: ${#JWT_SECRET}"
-          echo "REDIS HOST: $SPRING_DATA_REDIS_HOST"
           redis-cli -h localhost -p 6379 ping
+        env:
+          JWT_SECRET: U2VjdXJlS2V5Rm9yVGVzdGlmeVByb2plY3QyMDI1MTExMQ==
 
       - name: Build with Maven
         working-directory: backend/TestifyProject
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testify
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: 220295
+          SPRING_JPA_HIBERNATE_DDL_AUTO: update
+          SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+          SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+
+          SPRING_DATA_REDIS_DATABASE: 0
+          SPRING_DATA_REDIS_HOST: localhost
+          SPRING_DATA_REDIS_PORT: 6379
+          SPRING_DATA_REDIS_TIMEOUT: 60000
+
+          JWT_SECRET: U2VjdXJlS2V5Rm9yVGVzdGlmeVByb2plY3QyMDI1MTExMQ==
+          JWT_ISSUER: "Testify CI"
+          JWT_AT_MIN: 60
+          JWT_RT_DAYS: 7
         run: mvn -B clean install
 
       - name: Run tests
         working-directory: backend/TestifyProject
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testify
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: 220295
+          SPRING_JPA_HIBERNATE_DDL_AUTO: update
+          SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+          SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+
+          SPRING_DATA_REDIS_DATABASE: 0
+          SPRING_DATA_REDIS_HOST: localhost
+          SPRING_DATA_REDIS_PORT: 6379
+          SPRING_DATA_REDIS_TIMEOUT: 60000
+
+          JWT_SECRET: U2VjdXJlS2V5Rm9yVGVzdGlmeVByb2plY3QyMDI1MTExMQ==
+          JWT_ISSUER: "Testify CI"
+          JWT_AT_MIN: 60
+          JWT_RT_DAYS: 7
         run: mvn -B test
