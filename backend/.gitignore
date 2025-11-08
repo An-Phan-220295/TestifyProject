@@ -31,4 +31,3 @@ dist/
 .env
 .env.local
 application.properties
-application.yml
