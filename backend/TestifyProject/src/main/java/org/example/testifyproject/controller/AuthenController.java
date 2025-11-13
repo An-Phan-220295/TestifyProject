@@ -1,13 +1,18 @@
 package org.example.testifyproject.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.testifyproject.dtos.authen.AccessTokenOnly;
 import org.example.testifyproject.dtos.authen.LoginRequest;
 import org.example.testifyproject.dtos.authen.RefreshRequest;
 import org.example.testifyproject.dtos.authen.TokenResponse;
+import org.example.testifyproject.dtos.request.SignupRequest;
+import org.example.testifyproject.dtos.response.BaseResponse;
+import org.example.testifyproject.entity.enums.StatusCode;
 import org.example.testifyproject.security.AppUserDetails;
 import org.example.testifyproject.security.CustomUserDetailsService;
 import org.example.testifyproject.security.jwt.JwtService;
+import org.example.testifyproject.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,6 +20,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.util.Map;
 
 @RestController
@@ -24,6 +30,7 @@ public class AuthenController {
     private final AuthenticationManager authManager;
     private final CustomUserDetailsService userDetailsService;
     private final JwtService jwtUtil;
+    private final UserService userService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
@@ -65,5 +72,15 @@ public class AuthenController {
         String newAccess = jwtUtil.generateAccessToken(user);
 
         return ResponseEntity.ok(new AccessTokenOnly(newAccess));
+    }
+
+    @PostMapping("signup")
+    public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest signupRequest) {
+        BaseResponse baseResponse = BaseResponse.builder()
+                .status(StatusCode.SUCCESS.getHttpCode())
+                .message(StatusCode.SUCCESS.getMessage())
+                .data(userService.saveNewUser(signupRequest))
+                .timeStamp(Instant.now()).build();
+        return ResponseEntity.ok(baseResponse);
     }
 }

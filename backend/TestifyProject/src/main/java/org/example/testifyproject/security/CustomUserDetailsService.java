@@ -2,7 +2,7 @@ package org.example.testifyproject.security;
 
 import lombok.RequiredArgsConstructor;
 import org.example.testifyproject.entity.User;
-import org.example.testifyproject.entity.enums.Status;
+import org.example.testifyproject.entity.enums.UserStatus;
 import org.example.testifyproject.repository.UserRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,13 +21,12 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
-        boolean enabled = user.getStatus() == Status.ACTIVE;
+        boolean enabled = user.getUserStatus() == UserStatus.ACTIVE;
 
         List<SimpleGrantedAuthority> authorities =
                 List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().getName()));
 
         return new AppUserDetails(
-                user.getUsername(),
                 user.getPasswordHash(),
                 user.getEmail(),
                 enabled,
