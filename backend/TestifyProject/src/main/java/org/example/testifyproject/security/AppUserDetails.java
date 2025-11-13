@@ -19,7 +19,7 @@ import java.util.Collection;
 @AllArgsConstructor
 public class AppUserDetails implements UserDetails {
 
-    private String username;
+//    private String username;
     private String password;
     private String email;
     private boolean enabled;
@@ -37,7 +37,7 @@ public class AppUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return username;
+        return email;
     }
 
     // --- Các cờ kiểm tra trạng thái tài khoản ---

@@ -3,9 +3,10 @@ package org.example.testifyproject.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.testifyproject.entity.enums.Gender;
-import org.example.testifyproject.entity.enums.Status;
+import org.example.testifyproject.entity.enums.UserStatus;
 
-import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,9 +18,6 @@ public class User extends BaseEntity {
     @Id
     @Column(nullable = false, unique = true, length = 100)
     private String email;
-
-    @Column(nullable = false, unique = true, length = 100)
-    private String username;
 
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
@@ -33,19 +31,19 @@ public class User extends BaseEntity {
     @Column(name = "phone_number", unique = true, length = 20)
     private String phoneNumber;
 
-    private Instant dob;
+    private LocalDate dob;
 
     @Enumerated(EnumType.STRING)
     private Gender gender = Gender.OTHER;
 
     @Enumerated(EnumType.STRING)
-    private Status status = Status.ACTIVE;
+    private UserStatus userStatus = UserStatus.ACTIVE;
 
     @Column(name = "email_verified")
     private Boolean emailVerified = Boolean.FALSE;
 
     @Column(name = "last_login_at")
-    private Instant lastLoginAt;
+    private LocalDateTime lastLoginAt;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "role_id", nullable = false)

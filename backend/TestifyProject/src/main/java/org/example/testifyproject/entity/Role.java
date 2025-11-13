@@ -1,5 +1,6 @@
 package org.example.testifyproject.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,7 +10,11 @@ import java.util.Set;
 
 @Entity
 @Table(name = "roles")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Role extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,10 +23,11 @@ public class Role extends BaseEntity {
     @Column(nullable = false, unique = true, length = 50)
     private String name;
 
-    @Column(length = 255)
+    @Column(length = 250)
     private String description;
 
-    @OneToMany(mappedBy = "role")
+    @OneToMany(mappedBy = "role", fetch = FetchType.LAZY)
     @Builder.Default
+    @JsonIgnore
     private Set<User> users = new HashSet<>();
 }
