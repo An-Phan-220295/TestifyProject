@@ -13,6 +13,8 @@ import org.example.testifyproject.repository.RoleRepository;
 import org.example.testifyproject.repository.UserRepository;
 import org.example.testifyproject.service.UserService;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -41,4 +43,23 @@ public class UserServiceImpl implements UserService {
             throw new BaseException(StatusCode.INTERNAL_ERROR, "Unexpected error during save user");
         }
     }
+
+    @Override
+    public SignupResponse updateAvatar(String key) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+
+        user.setAvatarUrl(key);
+
+        try {
+            return userMapper.toSignupResponse(userRepository.save(user));
+        } catch (DataIntegrityViolationException e) {
+            throw new BaseException(StatusCode.DUPLICATE_RESOURCE, "Email or username already exists");
+        } catch (Exception e) {
+            throw new BaseException(StatusCode.INTERNAL_ERROR, "Unexpected error during save user");
+        }
+    }
+
+
 }

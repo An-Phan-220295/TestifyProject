@@ -61,51 +61,58 @@ jobs:
           done
           echo "✅ Redis is ready!"
 
-      - name: Debug environment (optional)
-        run: |
-          echo "JWT_SECRET length: ${#JWT_SECRET}"
-          redis-cli -h localhost -p 6379 ping
-        env:
-          JWT_SECRET: U2VjdXJlS2V5Rm9yVGVzdGlmeVByb2plY3QyMDI1MTExMQ==
-
       - name: Build with Maven
         working-directory: backend/TestifyProject
         env:
+          # Database
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testify
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: 220295
-          SPRING_JPA_HIBERNATE_DDL_AUTO: update
-          SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
-          SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
 
+          # Redis
           SPRING_DATA_REDIS_DATABASE: 0
           SPRING_DATA_REDIS_HOST: localhost
           SPRING_DATA_REDIS_PORT: 6379
           SPRING_DATA_REDIS_TIMEOUT: 60000
 
+          # JWT
           JWT_SECRET: U2VjdXJlS2V5Rm9yVGVzdGlmeVByb2plY3QyMDI1MTExMQ==
           JWT_ISSUER: "Testify CI"
           JWT_AT_MIN: 60
           JWT_RT_DAYS: 7
+
+          # AWS (mapping trực tiếp theo application.yml)
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+
         run: mvn -B clean install
 
       - name: Run tests
         working-directory: backend/TestifyProject
         env:
+          # Database
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testify
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: 220295
-          SPRING_JPA_HIBERNATE_DDL_AUTO: update
-          SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
-          SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
 
+          # Redis
           SPRING_DATA_REDIS_DATABASE: 0
           SPRING_DATA_REDIS_HOST: localhost
           SPRING_DATA_REDIS_PORT: 6379
           SPRING_DATA_REDIS_TIMEOUT: 60000
 
+          # JWT
           JWT_SECRET: U2VjdXJlS2V5Rm9yVGVzdGlmeVByb2plY3QyMDI1MTExMQ==
           JWT_ISSUER: "Testify CI"
           JWT_AT_MIN: 60
           JWT_RT_DAYS: 7
+
+          # AWS (mapping chuẩn y nguyên từ application.yml)
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+
         run: mvn -B test

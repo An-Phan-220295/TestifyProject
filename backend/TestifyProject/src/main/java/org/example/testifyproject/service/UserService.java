@@ -6,4 +6,5 @@ import org.example.testifyproject.entity.User;
 
 public interface UserService {
     SignupResponse saveNewUser(SignupRequest signupRequest);
+    SignupResponse updateAvatar(String key);
 }

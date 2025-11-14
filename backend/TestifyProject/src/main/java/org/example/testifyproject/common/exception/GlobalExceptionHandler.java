@@ -1,6 +1,7 @@
 package org.example.testifyproject.common.exception;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import org.example.testifyproject.common.exception.exceptions.BaseException;
 import org.example.testifyproject.dtos.response.ErrorResponse;
@@ -19,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+@Hidden
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalExceptionHandler {
     @ExceptionHandler(BaseException.class)
