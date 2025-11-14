@@ -33,9 +33,6 @@ public class SignupRequest {
     )
     private String password;
 
-    @Size(max = 500)
-    private String avatarUrl;
-
     @Past(message = "Date of birth must be in the past")
     private LocalDate dob;
 

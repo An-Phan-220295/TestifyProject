@@ -2,6 +2,7 @@ package org.example.testifyproject.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.testifyproject.common.util.Util;
 import org.example.testifyproject.dtos.authen.AccessTokenOnly;
 import org.example.testifyproject.dtos.authen.LoginRequest;
 import org.example.testifyproject.dtos.authen.RefreshRequest;
@@ -31,6 +32,7 @@ public class AuthenController {
     private final CustomUserDetailsService userDetailsService;
     private final JwtService jwtUtil;
     private final UserService userService;
+    private final Util util;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
@@ -76,11 +78,6 @@ public class AuthenController {
 
     @PostMapping("signup")
     public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest signupRequest) {
-        BaseResponse baseResponse = BaseResponse.builder()
-                .status(StatusCode.SUCCESS.getHttpCode())
-                .message(StatusCode.SUCCESS.getMessage())
-                .data(userService.saveNewUser(signupRequest))
-                .timeStamp(Instant.now()).build();
-        return ResponseEntity.ok(baseResponse);
+        return util.successResponse(userService.saveNewUser(signupRequest));
     }
 }
