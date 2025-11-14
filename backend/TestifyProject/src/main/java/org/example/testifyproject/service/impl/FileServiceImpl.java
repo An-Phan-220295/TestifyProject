@@ -1,17 +1,17 @@
 package org.example.testifyproject.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.example.testifyproject.dtos.request.DownloadFileRequest;
 import org.example.testifyproject.dtos.request.GenerateUrlFileRequest;
-import org.example.testifyproject.dtos.request.SaveFileConfirmRequest;
-import org.example.testifyproject.dtos.response.SignupResponse;
-import org.example.testifyproject.entity.enums.S3Folder;
 import org.example.testifyproject.service.FileService;
 import org.example.testifyproject.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.time.Duration;
@@ -26,7 +26,6 @@ public class FileServiceImpl implements FileService {
     private String bucketName;
 
     private final S3Presigner s3Presigner;
-    private final UserService userService;
 
     @Override
     public Map<String, String> generateURLFileUpload(GenerateUrlFileRequest request) {
@@ -54,14 +53,17 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public SignupResponse saveFileSuccess(SaveFileConfirmRequest request) {
-        String requestFolder = request.getFolder().getFolder();
+    public String getFileFromS3(String request) {
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(request)
+                .build();
 
-        if (S3Folder.AVATAR.getFolder().equals(requestFolder)) {
-            //Save key to avatar field
-            return userService.updateAvatar(request.getKey());
-        }
-
-        return null;
+        GetObjectPresignRequest presignRequest =
+                GetObjectPresignRequest.builder()
+                        .signatureDuration(Duration.ofMinutes(5))
+                        .getObjectRequest(getObjectRequest)
+                        .build();
+        return s3Presigner.presignGetObject(presignRequest).url().toString();
     }
 }

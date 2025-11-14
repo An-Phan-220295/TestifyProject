@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.example.testifyproject.common.exception.exceptions.BaseException;
 import org.example.testifyproject.common.exception.exceptions.RoleNotFoundException;
 import org.example.testifyproject.common.mapper.UserMapper;
+import org.example.testifyproject.dtos.request.DownloadFileRequest;
+import org.example.testifyproject.dtos.request.SaveAvatarConfirmRequest;
 import org.example.testifyproject.dtos.request.SignupRequest;
 import org.example.testifyproject.dtos.response.SignupResponse;
 import org.example.testifyproject.entity.Role;
@@ -11,6 +13,7 @@ import org.example.testifyproject.entity.User;
 import org.example.testifyproject.entity.enums.StatusCode;
 import org.example.testifyproject.repository.RoleRepository;
 import org.example.testifyproject.repository.UserRepository;
+import org.example.testifyproject.service.FileService;
 import org.example.testifyproject.service.UserService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,6 +28,7 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final FileService fileService;
 
     @Override
     public SignupResponse saveNewUser(SignupRequest signupRequest) {
@@ -45,10 +49,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public String getUserAvatar() {
+        return fileService.getFileFromS3(findCurrentUserByEmail().getAvatarUrl());
+    }
+
+    @Override
     public SignupResponse updateAvatar(String key) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+        User user = findCurrentUserByEmail();
 
         user.setAvatarUrl(key);
 
@@ -61,5 +68,14 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    private User findCurrentUserByEmail() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+    }
 
+    @Override
+    public SignupResponse saveAvatarSuccess(SaveAvatarConfirmRequest request) {
+        return updateAvatar(request.getKey());
+    }
 }
