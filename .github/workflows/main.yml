@@ -76,7 +76,7 @@ jobs:
           SPRING_DATA_REDIS_TIMEOUT: 60000
 
           # JWT
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_SECRET: U2VjdXJlS2V5Rm9yVGVzdGlmeVByb2plY3QyMDI1MTExMQ==
           JWT_ISSUER: "Testify CI"
           JWT_AT_MIN: 60
           JWT_RT_DAYS: 7
@@ -104,7 +104,7 @@ jobs:
           SPRING_DATA_REDIS_TIMEOUT: 60000
 
           # JWT
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_SECRET: U2VjdXJlS2V5Rm9yVGVzdGlmeVByb2plY3QyMDI1MTExMQ==
           JWT_ISSUER: "Testify CI"
           JWT_AT_MIN: 60
           JWT_RT_DAYS: 7
