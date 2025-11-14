@@ -12,10 +12,7 @@ import org.example.testifyproject.entity.enums.S3Folder;
 @NoArgsConstructor
 @Data
 @Builder
-public class SaveFileConfirmRequest {
+public class SaveAvatarConfirmRequest {
     @NotNull(message = "Key is required")
     private String key;
-
-    @NotNull(message = "S3Folder is required")
-    private S3Folder folder;
 }
