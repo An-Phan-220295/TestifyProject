@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @AllArgsConstructor
 public enum FileType {
-    PNG(".pnj", "image/png"),
+    PNG(".png", "image/png"),
     JPG(".jpg", "image/jpg");
 
     private final String type;

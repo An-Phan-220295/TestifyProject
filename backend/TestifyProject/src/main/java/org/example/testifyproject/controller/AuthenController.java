@@ -2,13 +2,16 @@ package org.example.testifyproject.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.testifyproject.adapter.MailServiceAdapter;
 import org.example.testifyproject.common.util.Util;
 import org.example.testifyproject.dtos.authen.AccessTokenOnly;
 import org.example.testifyproject.dtos.authen.LoginRequest;
 import org.example.testifyproject.dtos.authen.RefreshRequest;
 import org.example.testifyproject.dtos.authen.TokenResponse;
+import org.example.testifyproject.dtos.request.MailServiceRequest;
 import org.example.testifyproject.dtos.request.SignupRequest;
 import org.example.testifyproject.dtos.response.BaseResponse;
+import org.example.testifyproject.entity.enums.MailType;
 import org.example.testifyproject.entity.enums.StatusCode;
 import org.example.testifyproject.security.AppUserDetails;
 import org.example.testifyproject.security.CustomUserDetailsService;
@@ -33,6 +36,7 @@ public class AuthenController {
     private final JwtService jwtUtil;
     private final UserService userService;
     private final Util util;
+    private final MailServiceAdapter mailServiceAdapter;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
@@ -76,8 +80,14 @@ public class AuthenController {
         return ResponseEntity.ok(new AccessTokenOnly(newAccess));
     }
 
-    @PostMapping("signup")
+    @PostMapping("/signup")
     public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest signupRequest) {
         return util.successResponse(userService.saveNewUser(signupRequest));
+    }
+
+    @GetMapping("/test")
+    public ResponseEntity<?> test() {
+        String result = (String) mailServiceAdapter.sendEmail(new MailServiceRequest(MailType.VERIFY_EMAIL)).getBody();
+        return util.successResponse(result);
     }
 }
