@@ -1,10 +1,8 @@
 package org.example.testifyproject.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.example.testifyproject.dtos.request.DownloadFileRequest;
 import org.example.testifyproject.dtos.request.GenerateUrlFileRequest;
 import org.example.testifyproject.service.FileService;
-import org.example.testifyproject.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
