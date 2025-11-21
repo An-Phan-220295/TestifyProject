@@ -15,8 +15,8 @@ public class VerifyMailRequest {
     @NotEmpty
     private String appName;
 
-    @NotEmpty
-    @Email
+//    @NotEmpty
+//    @Email
     private String toAddress;
 
     @NotNull

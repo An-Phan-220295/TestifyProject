@@ -1,5 +1,6 @@
 package com.example.testify.service.impl;
 
+import com.example.testify.common.exception.exceptions.TemplateNotFoundException;
 import com.example.testify.common.type.MailType;
 import com.example.testify.libraries.dtos.requests.VerifyMailRequest;
 import com.example.testify.entity.MailTemplate;
@@ -23,9 +24,9 @@ public class MailServiceImpl implements MailService {
     private final MailTemplateRepository mailTemplateRepository;
 
     @Override
-    public void sendVerifyEmail(VerifyMailRequest verifyMailRequest) throws Exception {
+    public void sendVerifyEmail(VerifyMailRequest verifyMailRequest) throws MessagingException {
         MailTemplate mailTemplate = mailTemplateRepository.findMailTemplateByTemplateName(MailType.VERIFY_EMAIL.toString())
-                .orElseThrow(() -> new Exception(MailType.VERIFY_EMAIL.toString()));
+                .orElseThrow(() -> new TemplateNotFoundException(MailType.VERIFY_EMAIL.toString()));
 
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = getMimeMessageHelper(verifyMailRequest, mimeMessage, mailTemplate);
