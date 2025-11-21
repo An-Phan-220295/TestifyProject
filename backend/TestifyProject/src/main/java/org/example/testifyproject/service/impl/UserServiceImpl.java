@@ -1,16 +1,15 @@
 package org.example.testifyproject.service.impl;
 
+import com.example.testify_libraries.common.enums.StatusCode;
 import lombok.RequiredArgsConstructor;
-import org.example.testifyproject.common.exception.exceptions.BaseException;
+import com.example.testify_libraries.common.exception.BaseException;
 import org.example.testifyproject.common.exception.exceptions.RoleNotFoundException;
 import org.example.testifyproject.common.mapper.UserMapper;
-import org.example.testifyproject.dtos.request.DownloadFileRequest;
 import org.example.testifyproject.dtos.request.SaveAvatarConfirmRequest;
 import org.example.testifyproject.dtos.request.SignupRequest;
 import org.example.testifyproject.dtos.response.SignupResponse;
 import org.example.testifyproject.entity.Role;
 import org.example.testifyproject.entity.User;
-import org.example.testifyproject.entity.enums.StatusCode;
 import org.example.testifyproject.repository.RoleRepository;
 import org.example.testifyproject.repository.UserRepository;
 import org.example.testifyproject.service.FileService;

@@ -1,15 +1,14 @@
-package org.example.testifyproject.common.util;
+package com.example.testify_libraries.common.util;
 
-import org.example.testifyproject.dtos.response.BaseResponse;
-import org.example.testifyproject.entity.enums.StatusCode;
+
+import com.example.testify_libraries.common.enums.StatusCode;
+import com.example.testify_libraries.dtos.responses.BaseResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 
-@Service
 public class Util {
-    public ResponseEntity<?> successResponse(Object data) {
+    public static ResponseEntity<?> successResponse(Object data) {
         BaseResponse baseResponse = BaseResponse.builder()
                 .status(StatusCode.SUCCESS.getHttpCode())
                 .message(StatusCode.SUCCESS.getMessage())

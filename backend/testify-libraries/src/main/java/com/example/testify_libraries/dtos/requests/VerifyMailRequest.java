@@ -1,6 +1,5 @@
-package com.example.testify.dto.request;
+package com.example.testify_libraries.dtos.requests;
 
-import com.example.testify.common.type.MailType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
@@ -8,9 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.Duration;
-import java.util.Map;
 
 @Getter
 @NoArgsConstructor

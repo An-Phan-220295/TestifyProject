@@ -131,12 +131,16 @@
             <type>pom</type>
             <scope>import</scope>
         </dependency>
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>testify-libraries</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 
     <build>
         <plugins>
-            <!-- 2) Compiler: set release + lombok annotation processor có version -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

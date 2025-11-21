@@ -1,7 +1,7 @@
-package org.example.testifyproject.common.exception.exceptions;
+package com.example.testify_libraries.common.exception;
 
+import com.example.testify_libraries.common.enums.StatusCode;
 import lombok.Getter;
-import org.example.testifyproject.entity.enums.StatusCode;
 
 @Getter
 public class BaseException extends RuntimeException {

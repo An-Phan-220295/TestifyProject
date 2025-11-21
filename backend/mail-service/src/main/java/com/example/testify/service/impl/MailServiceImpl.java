@@ -1,7 +1,7 @@
 package com.example.testify.service.impl;
 
 import com.example.testify.common.type.MailType;
-import com.example.testify.dto.request.VerifyMailRequest;
+import com.example.testify_libraries.dtos.requests.VerifyMailRequest;
 import com.example.testify.entity.MailTemplate;
 import com.example.testify.repository.MailTemplateRepository;
 import com.example.testify.service.MailService;

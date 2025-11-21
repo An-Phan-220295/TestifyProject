@@ -1,4 +1,4 @@
-package org.example.testifyproject.dtos.response;
+package com.example.testify_libraries.dtos.responses;
 
 import lombok.*;
 

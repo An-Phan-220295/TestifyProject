@@ -1,8 +1,8 @@
 package org.example.testifyproject.controller;
 
+import com.example.testify_libraries.common.util.Util;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.testifyproject.common.util.Util;
 import org.example.testifyproject.dtos.request.SaveAvatarConfirmRequest;
 import org.example.testifyproject.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -16,15 +16,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-    private final Util util;
 
     @PostMapping("/save-file-completed")
     public ResponseEntity<?> saveFileCompleted(@Valid @RequestBody SaveAvatarConfirmRequest request) {
-        return util.successResponse(userService.saveAvatarSuccess(request));
+        return Util.successResponse(userService.saveAvatarSuccess(request));
     }
 
     @PostMapping("/get-avatar")
     public ResponseEntity<?> getAvatar() {
-        return util.successResponse(userService.getUserAvatar());
+        return Util.successResponse(userService.getUserAvatar());
     }
 }
