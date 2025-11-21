@@ -84,7 +84,7 @@
             <version>1.5.5.Final</version>
         </dependency>
         <dependency>
-            <groupId>com.example</groupId>
+            <groupId>com.testify</groupId>
             <artifactId>testify-libraries</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>

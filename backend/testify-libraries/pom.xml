@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<!-- ❌ BỎ SPRING BOOT PARENT (library không được dùng parent) -->
-	<groupId>com.example</groupId>
+	<groupId>com.testify</groupId>
 	<artifactId>testify-libraries</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
