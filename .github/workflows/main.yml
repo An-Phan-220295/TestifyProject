@@ -92,7 +92,7 @@ jobs:
 
       # 🔥 BƯỚC 3: BUILD SERVICE 2 (Mail Service)
       - name: Build Mail Service
-        working-directory: backend/testify-mail-service
+        working-directory: backend/mail-service
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testify
           SPRING_DATASOURCE_USERNAME: postgres
