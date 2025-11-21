@@ -1,6 +1,6 @@
 package com.example.testify.controller;
 
-import com.example.testify.dto.request.MailServiceRequest;
+import com.example.testify.dto.request.VerifyMailRequest;
 import com.example.testify.service.MailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class MailServiceController {
     private final MailService mailService;
 
-    @PostMapping("/send-email")
-    public ResponseEntity<?> sendEmail(@Valid @RequestBody MailServiceRequest mailServiceRequest) {
-        mailService.sendEmail(mailServiceRequest);
-        return new ResponseEntity<>("mailService.sendEmail()", HttpStatusCode.valueOf(200));
+    @PostMapping("/send-verify-email")
+    public ResponseEntity<?> sendVerifyEmail(@Valid @RequestBody VerifyMailRequest verifyMailRequest) throws Exception {
+        mailService.sendVerifyEmail(verifyMailRequest);
+        return new ResponseEntity<>("Operation completed successfully", HttpStatusCode.valueOf(200));
     }
 }
