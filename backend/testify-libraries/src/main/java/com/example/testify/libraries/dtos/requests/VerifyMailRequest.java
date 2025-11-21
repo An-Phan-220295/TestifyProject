@@ -1,4 +1,4 @@
-package com.example.testify_libraries.dtos.requests;
+package com.example.testify.libraries.dtos.requests;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;

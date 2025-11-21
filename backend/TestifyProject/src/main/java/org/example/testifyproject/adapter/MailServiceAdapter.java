@@ -1,6 +1,6 @@
 package org.example.testifyproject.adapter;
 
-import com.example.testify_libraries.dtos.requests.VerifyMailRequest;
+import com.example.testify.libraries.dtos.requests.VerifyMailRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
