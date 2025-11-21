@@ -8,7 +8,7 @@
         <version>3.5.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>org.example</groupId>
+    <groupId>com.testify</groupId>
     <artifactId>TestifyProject</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>TestifyProject</name>
@@ -132,7 +132,7 @@
             <scope>import</scope>
         </dependency>
         <dependency>
-            <groupId>com.example</groupId>
+            <groupId>com.testify</groupId>
             <artifactId>testify-libraries</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>

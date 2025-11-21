@@ -1,7 +1,7 @@
 package org.example.testifyproject.common.exception.exceptions;
 
-import com.example.testify_libraries.common.enums.StatusCode;
-import com.example.testify_libraries.common.exception.BaseException;
+import com.example.testify.libraries.common.enums.StatusCode;
+import com.example.testify.libraries.common.exception.BaseException;
 
 public class RoleNotFoundException extends BaseException {
     public RoleNotFoundException(String roleName) {

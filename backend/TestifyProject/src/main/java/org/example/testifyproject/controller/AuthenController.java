@@ -1,7 +1,7 @@
 package org.example.testifyproject.controller;
 
-import com.example.testify_libraries.common.util.Util;
-import com.example.testify_libraries.dtos.requests.VerifyMailRequest;
+import com.example.testify.libraries.common.util.Util;
+import com.example.testify.libraries.dtos.requests.VerifyMailRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.testifyproject.adapter.MailServiceAdapter;

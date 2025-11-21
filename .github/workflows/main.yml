@@ -10,6 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     environment: TestifyProject
+
     services:
       postgres:
         image: postgres:14
@@ -50,69 +51,55 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y postgresql-client redis-tools
+
           echo "⏳ Waiting for PostgreSQL..."
           until pg_isready -h localhost -p 5432 -U postgres; do
             sleep 2
           done
           echo "✅ PostgreSQL is ready!"
+
           echo "⏳ Waiting for Redis..."
           until redis-cli -h localhost -p 6379 ping | grep PONG; do
             sleep 2
           done
           echo "✅ Redis is ready!"
 
-      - name: Build with Maven
-        working-directory: backend/TestifyProject
-        env:
-          # Database
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testify
-          SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: 220295
-
-          # Redis
-          SPRING_DATA_REDIS_DATABASE: 0
-          SPRING_DATA_REDIS_HOST: localhost
-          SPRING_DATA_REDIS_PORT: 6379
-          SPRING_DATA_REDIS_TIMEOUT: 60000
-
-          # JWT
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          JWT_ISSUER: "Testify CI"
-          JWT_AT_MIN: 60
-          JWT_RT_DAYS: 7
-
-          # AWS (mapping trực tiếp theo application.yml)
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
-
+      # 🔥 BƯỚC 1: BUILD LIBRARY CHUNG
+      - name: Build Testify Libraries
+        working-directory: backend/testify-libraries
         run: mvn -B clean install
 
-      - name: Run tests
+      # 🔥 BƯỚC 2: BUILD SERVICE 1 (Main App)
+      - name: Build TestifyProject
         working-directory: backend/TestifyProject
         env:
-          # Database
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testify
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: 220295
-
-          # Redis
           SPRING_DATA_REDIS_DATABASE: 0
           SPRING_DATA_REDIS_HOST: localhost
           SPRING_DATA_REDIS_PORT: 6379
           SPRING_DATA_REDIS_TIMEOUT: 60000
-
-          # JWT
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           JWT_ISSUER: "Testify CI"
           JWT_AT_MIN: 60
           JWT_RT_DAYS: 7
-
-          # AWS (mapping chuẩn y nguyên từ application.yml)
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
           S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+        run: mvn -B clean install
 
+      # 🔥 BƯỚC 3: BUILD SERVICE 2 (Mail Service)
+      - name: Build Mail Service
+        working-directory: backend/testify-mail-service
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testify
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: 220295
+        run: mvn -B clean install
+
+      # 🔥 BƯỚC 4: RUN TESTS của TestifyProject
+      - name: Run tests
+        working-directory: backend/TestifyProject
         run: mvn -B test

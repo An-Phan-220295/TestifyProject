@@ -1,8 +1,8 @@
 package com.example.testify.controller;
 
 import com.example.testify.service.MailService;
-import com.example.testify_libraries.common.util.Util;
-import com.example.testify_libraries.dtos.requests.VerifyMailRequest;
+import com.example.testify.libraries.common.util.Util;
+import com.example.testify.libraries.dtos.requests.VerifyMailRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

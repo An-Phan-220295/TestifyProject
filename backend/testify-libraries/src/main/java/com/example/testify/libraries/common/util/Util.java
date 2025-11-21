@@ -1,8 +1,8 @@
-package com.example.testify_libraries.common.util;
+package com.example.testify.libraries.common.util;
 
 
-import com.example.testify_libraries.common.enums.StatusCode;
-import com.example.testify_libraries.dtos.responses.BaseResponse;
+import com.example.testify.libraries.common.enums.StatusCode;
+import com.example.testify.libraries.dtos.responses.BaseResponse;
 import org.springframework.http.ResponseEntity;
 
 import java.time.Instant;

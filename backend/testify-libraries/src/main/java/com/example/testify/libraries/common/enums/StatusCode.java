@@ -1,4 +1,4 @@
-package com.example.testify_libraries.common.enums;
+package com.example.testify.libraries.common.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,11 +1,11 @@
 package org.example.testifyproject.common.exception;
 
-import com.example.testify_libraries.common.enums.StatusCode;
+import com.example.testify.libraries.common.enums.StatusCode;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
-import com.example.testify_libraries.common.exception.BaseException;
-import com.example.testify_libraries.dtos.responses.ErrorResponse;
+import com.example.testify.libraries.common.exception.BaseException;
+import com.example.testify.libraries.dtos.responses.ErrorResponse;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;

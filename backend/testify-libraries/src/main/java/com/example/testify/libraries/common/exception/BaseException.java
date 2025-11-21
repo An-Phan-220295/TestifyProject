@@ -1,6 +1,6 @@
-package com.example.testify_libraries.common.exception;
+package com.example.testify.libraries.common.exception;
 
-import com.example.testify_libraries.common.enums.StatusCode;
+import com.example.testify.libraries.common.enums.StatusCode;
 import lombok.Getter;
 
 @Getter
