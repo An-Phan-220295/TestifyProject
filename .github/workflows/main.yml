@@ -110,10 +110,3 @@ jobs:
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: 220295
         run: mvn -B clean install
-
-      # ==========================================================
-      # 4) (TÙY CHỌN) Nếu thật sự muốn chạy test của TestifyProject
-      # ==========================================================
-      - name: Run only unit tests of TestifyProject
-        working-directory: backend/TestifyProject
-        run: mvn -B -Dtest=*Test test
