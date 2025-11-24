@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import com.example.testify.libraries.common.exception.BaseException;
 import com.example.testify.libraries.dtos.responses.ErrorResponse;
+import org.example.testifyproject.common.exception.exceptions.InvalidVerifyEmailTokenException;
+import org.example.testifyproject.common.exception.exceptions.UserIsExistException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;
@@ -59,6 +61,18 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.internalServerError()
                 .body(setErrorResponse(StatusCode.INTERNAL_ERROR, message, http.getRequestURI()));
+    }
+
+    @ExceptionHandler(UserIsExistException.class)
+    public ResponseEntity<?> handleUserIsExistException(UserIsExistException ex, HttpServletRequest http) {
+        return ResponseEntity.internalServerError()
+                .body(setErrorResponse(StatusCode.USER_EXIST, ex.getMessage(), http.getRequestURI()));
+    }
+
+    @ExceptionHandler(InvalidVerifyEmailTokenException.class)
+    public ResponseEntity<?> handleInvalidVerifyEmailTokenException(InvalidVerifyEmailTokenException ex, HttpServletRequest http) {
+        return ResponseEntity.internalServerError()
+                .body(setErrorResponse(StatusCode.INVALID_VERIFY_EMAIL_TOKEN, ex.getMessage(), http.getRequestURI()));
     }
 
     private ErrorResponse setErrorResponse(StatusCode statusCode, Object message, String path) {

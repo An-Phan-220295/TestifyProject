@@ -1,10 +1,16 @@
 package org.example.testifyproject.service.impl;
 
 import com.example.testify.libraries.common.enums.StatusCode;
-import lombok.RequiredArgsConstructor;
 import com.example.testify.libraries.common.exception.BaseException;
+import com.example.testify.libraries.dtos.requests.VerifyMailRequest;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.example.testifyproject.common.exception.exceptions.InvalidVerifyEmailTokenException;
 import org.example.testifyproject.common.exception.exceptions.RoleNotFoundException;
+import org.example.testifyproject.common.exception.exceptions.UserIsExistException;
 import org.example.testifyproject.common.mapper.UserMapper;
+import org.example.testifyproject.common.util.RedisService;
 import org.example.testifyproject.dtos.request.SaveAvatarConfirmRequest;
 import org.example.testifyproject.dtos.request.SignupRequest;
 import org.example.testifyproject.dtos.response.SignupResponse;
@@ -14,25 +20,40 @@ import org.example.testifyproject.repository.RoleRepository;
 import org.example.testifyproject.repository.UserRepository;
 import org.example.testifyproject.service.FileService;
 import org.example.testifyproject.service.UserService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final FileService fileService;
+    private final RedisService redisService;
+    private final int TOKEN_DURATION_MINUTE = 3;
+    private final String VERIFY_ACCOUNT_PREFIX = "verify:email:";
+    private final String FALLBACK_VERIFY_ACCOUNT_PREFIX = "fallback:verify:email:";
+
+    @Value("${spring.application.name}")
+    private String appName;
 
     @Override
     public SignupResponse saveNewUser(SignupRequest signupRequest) {
-        Role defaultRole = roleRepository.findByName(signupRequest.getRoleType().toString())
-                .orElseThrow(() -> new RoleNotFoundException(signupRequest.getRoleType().toString()));
+        if (userRepository.existsByEmail(signupRequest.getEmail())) {
+            throw new UserIsExistException(signupRequest.getEmail());
+        }
+
+        Role defaultRole = roleRepository.findByName(signupRequest.getRoleType().toString()).orElseThrow(() -> new RoleNotFoundException(signupRequest.getRoleType().toString()));
         User newUser = userMapper.toEntity(signupRequest);
         newUser.setRole(defaultRole);
         newUser.setPasswordHash(passwordEncoder.encode(signupRequest.getPassword()));
@@ -67,14 +88,80 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private User findCurrentUserByEmail() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
-    }
-
     @Override
     public SignupResponse saveAvatarSuccess(SaveAvatarConfirmRequest request) {
         return updateAvatar(request.getKey());
+    }
+
+    @Override
+    public VerifyMailRequest generateConfirmURL(SignupRequest signupRequest, HttpServletRequest request) {
+        String scheme = request.getScheme();
+        String serverName = request.getServerName();
+        int serverPort = request.getServerPort();
+        String contextPath = request.getContextPath();
+
+        String appUrl = scheme + "://" + serverName + ":" + serverPort + contextPath;
+
+        String email = signupRequest.getEmail();
+        //Generate verify va fallback token
+        String verifyToken = generateToken();
+        String fallbackToken = generateToken();
+
+        //Generate 2 url
+        String verifyURL = appUrl + "/auth/verify-account/" + verifyToken;
+        String fallbackURL = appUrl + "/auth/fallback-verify-account/" + fallbackToken;
+
+        //Luu token va fallback token vao redis
+        saveVerifyTokenRedis(email, verifyToken, VERIFY_ACCOUNT_PREFIX);
+        saveVerifyTokenRedis(email, fallbackToken, FALLBACK_VERIFY_ACCOUNT_PREFIX);
+
+        return VerifyMailRequest.builder().appName(appName).toAddress(email).verifyLink(verifyURL).fallbackLink(fallbackURL).minuteExpireTime(TOKEN_DURATION_MINUTE).build();
+    }
+
+    private void saveVerifyTokenRedis(String email, String token, String prefix) {
+        try {
+            String key = prefix + token;
+            Duration duration = Duration.ofMinutes(TOKEN_DURATION_MINUTE);
+
+            redisService.set(key, email, duration);
+        } catch (Exception e) {
+            log.error("❌ Failed to save verify token for email {}: {}", email, e.getMessage());
+        }
+    }
+
+    private String generateToken() {
+        return UUID.randomUUID().toString();
+    }
+
+    @Override
+    public void verifyAccount(String token) {
+        //Check token trong redis
+        String verifyKey = VERIFY_ACCOUNT_PREFIX + token;
+        String fallbackKey = FALLBACK_VERIFY_ACCOUNT_PREFIX + token;
+
+        String verifyEmail = redisService.get(verifyKey, String.class);
+
+        if (verifyEmail == null) {
+            verifyEmail = redisService.get(fallbackKey, String.class);
+        }
+
+        if (verifyEmail != null) {
+            //Doi trang thai account trong db
+            String finalVerifyEmail = verifyEmail;
+            User user = userRepository.findByEmail(verifyEmail).orElseThrow(
+                    () -> new UsernameNotFoundException("User not found: " + finalVerifyEmail));
+            user.setEmailVerified(true);
+            userRepository.save(user);
+            //Xoa 2 token trong redis
+            redisService.delete(verifyKey);
+            redisService.delete(fallbackKey);
+        } else {
+            throw new InvalidVerifyEmailTokenException();
+        }
+    }
+
+    private User findCurrentUserByEmail() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
     }
 }

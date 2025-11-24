@@ -2,6 +2,7 @@ package org.example.testifyproject.controller;
 
 import com.example.testify.libraries.common.util.Util;
 import com.example.testify.libraries.dtos.requests.VerifyMailRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.testifyproject.adapter.MailServiceAdapter;
@@ -76,14 +77,22 @@ public class AuthenController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest signupRequest) {
-        return Util.successResponse(userService.saveNewUser(signupRequest));
-    }
-
-    @PostMapping("/verify-account")
-    public ResponseEntity<?> verifyAccount(@Valid @RequestBody VerifyMailRequest verifyMailRequest) {
-
+    public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest signupRequest, HttpServletRequest request) {
+        userService.saveNewUser(signupRequest);
+        VerifyMailRequest verifyMailRequest = userService.generateConfirmURL(signupRequest, request);
         String result = mailServiceAdapter.sendEmail(verifyMailRequest).getBody();
         return Util.successResponse(result);
+    }
+
+    @GetMapping("/verify-account/{token}")
+    public ResponseEntity<?> verifyAccount(@PathVariable String token) {
+        userService.verifyAccount(token);
+        return Util.successResponse("Verified success");
+    }
+
+    @GetMapping("/fallback-verify-account/{token}")
+    public ResponseEntity<?> fallbackVerifyAccount(@PathVariable String token) {
+        userService.verifyAccount(token);
+        return Util.successResponse("Verified success");
     }
 }
