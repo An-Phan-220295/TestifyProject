@@ -1,8 +1,8 @@
 package com.example.testify.common.exception;
 
-import com.example.testify_libraries.common.enums.StatusCode;
-import com.example.testify_libraries.common.exception.BaseException;
-import com.example.testify_libraries.dtos.responses.ErrorResponse;
+import com.example.testify.libraries.common.enums.StatusCode;
+import com.example.testify.libraries.common.exception.BaseException;
+import com.example.testify.libraries.dtos.responses.ErrorResponse;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;

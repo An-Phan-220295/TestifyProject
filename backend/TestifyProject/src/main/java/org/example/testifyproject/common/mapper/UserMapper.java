@@ -1,6 +1,5 @@
 package org.example.testifyproject.common.mapper;
 
-import org.example.testifyproject.dtos.request.DownloadFileRequest;
 import org.example.testifyproject.dtos.request.SignupRequest;
 import org.example.testifyproject.dtos.response.SignupResponse;
 import org.example.testifyproject.entity.User;

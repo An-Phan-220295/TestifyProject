@@ -18,6 +18,8 @@ public enum StatusCode {
     NOT_FOUND(HttpStatus.NOT_FOUND, "Resource not found"),
     VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "Validation failed"),
     DUPLICATE_RESOURCE(HttpStatus.CONFLICT, "Resource already exists"),
+    USER_EXIST(HttpStatus.CONFLICT, "User already exists"),
+    INVALID_VERIFY_EMAIL_TOKEN(HttpStatus.BAD_REQUEST, "Invalid verify email token"),
 
     // --- 5xx Server Errors ---
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error"),
