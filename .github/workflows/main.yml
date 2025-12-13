@@ -75,7 +75,7 @@ jobs:
       # 2) BUILD TESTIFY PROJECT (SKIP TEST vì test bị lỗi DB_URL)
       # ==========================================================
       - name: Build Testify Project (Skip Tests)
-        working-directory: backend/TestifyProject
+        working-directory: backend/testify-service
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testify
           SPRING_DATASOURCE_USERNAME: postgres
