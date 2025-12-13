@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.testify</groupId>
-    <artifactId>TestifyProject</artifactId>
+    <artifactId>testify-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>TestifyProject</name>
+    <name>testify-service</name>
     <description>TestifyProject</description>
     <url/>
     <licenses>
