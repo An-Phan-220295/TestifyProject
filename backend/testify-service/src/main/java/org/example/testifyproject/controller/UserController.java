@@ -3,6 +3,7 @@ package org.example.testifyproject.controller;
 import com.example.testify.libraries.common.util.Util;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.testifyproject.dtos.request.SaveAvatarConfirmRequest;
 import org.example.testifyproject.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -14,16 +15,29 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/user/")
 @RequiredArgsConstructor
+@Slf4j
 public class UserController {
     private final UserService userService;
 
     @PostMapping("/save-file-completed")
     public ResponseEntity<?> saveFileCompleted(@Valid @RequestBody SaveAvatarConfirmRequest request) {
-        return Util.successResponse(userService.saveAvatarSuccess(request));
+        log.info("Save avatar file completed request received");
+
+        Object result = userService.saveAvatarSuccess(request);
+
+        log.info("User avatar saved successfully");
+
+        return Util.successResponse(result);
     }
 
     @PostMapping("/get-avatar")
     public ResponseEntity<?> getAvatar() {
-        return Util.successResponse(userService.getUserAvatar());
+        log.info("Get user avatar request received");
+
+        Object avatar = userService.getUserAvatar();
+
+        log.info("Get user avatar successfully");
+
+        return Util.successResponse(avatar);
     }
 }

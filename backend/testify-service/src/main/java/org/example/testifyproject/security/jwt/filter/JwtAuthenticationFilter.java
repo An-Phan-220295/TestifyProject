@@ -1,10 +1,12 @@
 package org.example.testifyproject.security.jwt.filter;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.testifyproject.security.AppUserDetails;
 import org.example.testifyproject.security.jwt.JwtService;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -18,10 +20,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-import io.jsonwebtoken.JwtException;
-
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
@@ -36,6 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.debug("No Authorization header found. path={}", path);
             filterChain.doFilter(request, response);
             return;
         }
@@ -46,6 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
                 if (!jwtService.isTokenValidForUser(token, (AppUserDetails) userDetails)) {
+                    log.warn("JWT validation failed for user={}", email);
                     throw new BadCredentialsException("Invalid token for user/version");
                 }
 
@@ -54,9 +57,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 userDetails.getAuthorities());
                 authenToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenToken);
+
+                log.debug("JWT authentication successful. user={}", email);
             }
         } catch (JwtException | IllegalArgumentException ex) {
             SecurityContextHolder.clearContext();
+            log.warn("JWT authentication failed. path={}, reason={}",
+                    path, ex.getClass().getSimpleName());
+
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.getWriter().write("{\"message\": \"Token expired or invalid\"}");

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="60">
+
+    <!-- ======================
+         Global Properties
+    ======================= -->
+    <Properties>
+        <Property name="APP_NAME">testify-service</Property>
+        <Property name="LOG_DIR">logs</Property>
+        <Property name="LOG_PATTERN">
+            %d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] %c{1.} - %msg%n
+        </Property>
+    </Properties>
+
+    <!-- ======================
+         Appenders
+    ======================= -->
+    <Appenders>
+
+        <!-- Console (local / docker) -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+
+        <!-- Main rolling log -->
+        <RollingFile name="AppFile"
+                     fileName="${LOG_DIR}/application.log"
+                     filePattern="${LOG_DIR}/archive/application-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="100 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
+
+        <!-- Error-only rolling log -->
+        <RollingFile name="ErrorFile"
+                     fileName="${LOG_DIR}/error.log"
+                     filePattern="${LOG_DIR}/archive/error-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30"/>
+            <Filters>
+                <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+        </RollingFile>
+
+        <!-- Async wrapper -->
+        <Async name="AsyncApp">
+            <AppenderRef ref="AppFile"/>
+            <AppenderRef ref="ErrorFile"/>
+        </Async>
+
+    </Appenders>
+
+    <!-- ======================
+         Loggers
+    ======================= -->
+    <Loggers>
+
+        <!-- Spring framework -->
+        <Logger name="org.springframework" level="INFO"/>
+
+        <!-- Hibernate -->
+        <Logger name="org.hibernate" level="WARN"/>
+
+        <!-- AWS SDK -->
+        <Logger name="software.amazon.awssdk" level="WARN"/>
+
+        <!-- Security (JWT, filters) -->
+        <Logger name="org.example.testifyproject.security" level="INFO"/>
+
+        <!-- Application code -->
+        <Logger name="org.example.testifyproject" level="INFO"/>
+
+        <!-- Root -->
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="AsyncApp"/>
+        </Root>
+
+    </Loggers>
+</Configuration>

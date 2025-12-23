@@ -31,3 +31,6 @@ dist/
 .env
 .env.local
 application.properties
+
+# === Logs ===
+logs/
