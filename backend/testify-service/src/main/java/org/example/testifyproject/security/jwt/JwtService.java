@@ -36,41 +36,55 @@ public class JwtService {
     @PostConstruct
     void init() {
         if (props.getSecret() == null || props.getSecret().isBlank()) {
-            throw new IllegalStateException("app.jwt.secret is null/blank. Check your application.yml and environment variables.");
+            log.error("JWT secret is missing or blank");
+            throw new IllegalStateException(
+                    "app.jwt.secret is null/blank. Check configuration."
+            );
         }
         this.key = Keys.hmacShaKeyFor(
                 Decoders.BASE64.decode(props.getSecret())
         );
+        log.info("JWT service initialized successfully");
     }
 
     public String generateAccessToken(AppUserDetails user) {
         Instant now = Instant.now();
-        Date expiration = Date.from(now.plus(props.getAccessTokenMinutes(), ChronoUnit.MINUTES));
+
+        log.debug("Generating access token. email={}", user.getEmail());
 
         return Jwts.builder()
                 .setSubject(user.getEmail())
-                .claim("roles", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
+                .claim("roles", user.getAuthorities()
+                        .stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .toList())
                 .setIssuedAt(Date.from(now))
-                .setExpiration(expiration)
+                .setExpiration(Date.from(
+                        now.plus(props.getAccessTokenMinutes(), ChronoUnit.MINUTES)
+                ))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public String generateAndSaveRefreshToken(AppUserDetails user) {
         Instant now = Instant.now();
-        Date expiration = Date.from(now.plus(props.getRefreshTokenDays(), ChronoUnit.DAYS));
 
         String refreshToken = Jwts.builder()
                 .setSubject(user.getEmail())
                 .setIssuedAt(Date.from(now))
-                .setExpiration(expiration)
+                .setExpiration(Date.from(
+                        now.plus(props.getRefreshTokenDays(), ChronoUnit.DAYS)
+                ))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
-        if (!saveTokenIntoRedis(TokenType.REFRESH_TOKEN, user.getEmail(), refreshToken))
-            log.warn("Refresh token not persisted. Login may not be refreshable.");
+        if (!saveTokenIntoRedis(TokenType.REFRESH_TOKEN, user.getEmail(), refreshToken)) {
+            log.warn("Failed to persist refresh token. email={}", user.getEmail());
+        }
+
         return refreshToken;
     }
+
 
     public String validateAndExtractUsername(String token) {
         Claims claims = parseClaims(token);
@@ -93,19 +107,22 @@ public class JwtService {
         String token = authHeader.substring(7);
         String email = validateAndExtractUsername(token);
 
-        //Save accessToken to Blacklist
+        log.info("Logout request. email={}", email);
+
         if (!saveTokenIntoRedis(TokenType.ACCESS_TOKEN, email, token)) {
-            log.warn("Save access token into blacklist failed");
+            log.warn("Failed to blacklist access token. email={}", email);
             return false;
         }
 
-        //Remove refresh token
         if (!removeTokenIntoRedis(email)) {
-            log.warn("Remove refresh token from blacklist failed");
+            log.warn("Failed to remove refresh token. email={}", email);
             return false;
         }
+
+        log.info("Logout successful. email={}", email);
         return true;
     }
+
 
     private boolean saveTokenIntoRedis(TokenType tokenType, String email, String token) {
         try {
@@ -115,20 +132,24 @@ public class JwtService {
             if (tokenType == TokenType.REFRESH_TOKEN) {
                 ttl = Duration.ofDays(props.getRefreshTokenDays());
                 key = REFRESH_PREFIX + email;
-                log.debug("✅ Saved refresh token for email {} (TTL: {}s)", email, ttl.getSeconds());
             } else {
                 ttl = Duration.ofMinutes(props.getAccessTokenMinutes());
-                key = BLACKLIST_PREFIX + token;
-                log.debug("✅ Blacklisted access token for email {} (TTL: {}s)", email, ttl.getSeconds());
+                key = BLACKLIST_PREFIX + email;
             }
 
             redisService.set(key, token, ttl);
+
+            log.debug("Token persisted. type={}, email={}, ttlSeconds={}",
+                    tokenType, email, ttl.getSeconds());
+
             return true;
         } catch (Exception e) {
-            log.error("❌ Failed to save {} for email {}: {}", tokenType, email, e.getMessage());
+            log.error("Failed to persist token. type={}, email={}",
+                    tokenType, email, e);
             return false;
         }
     }
+
 
     private boolean removeTokenIntoRedis(String email) {
         try {
@@ -136,7 +157,7 @@ public class JwtService {
             redisService.delete(key);
             return true;
         } catch (Exception e) {
-            log.error("❌ Failed to remove refresh token for user {}: {}", email, e.getMessage());
+            log.error("Failed to remove refresh token for user {}: {}", email, e.getMessage());
             return false;
         }
     }
@@ -145,7 +166,7 @@ public class JwtService {
         String key = BLACKLIST_PREFIX + token;
         boolean exists = redisService.exists(key);
         if (exists) {
-            log.debug("🚫 Token blacklisted: {}", key);
+            log.debug("Token blacklisted: {}", key);
         }
         return exists;
     }
@@ -153,33 +174,34 @@ public class JwtService {
     private Claims parseClaims(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
     }
+
     public boolean isRefreshTokenValid(String refreshToken) {
         try {
             String email = validateAndExtractUsername(refreshToken);
-
             String key = REFRESH_PREFIX + email;
             String storedToken = redisService.get(key, String.class);
 
             if (storedToken == null) {
-                log.warn("❌ Refresh token not found in Redis for {}", email);
+                log.warn("Refresh token not found. email={}", email);
                 return false;
             }
 
             if (!storedToken.equals(refreshToken)) {
-                log.warn("❌ Refresh token mismatch for {}", email);
+                log.warn("Refresh token mismatch. email={}", email);
                 return false;
             }
 
             if (isTokenExpired(refreshToken)) {
-                log.warn("❌ Refresh token expired for {}", email);
+                log.warn("Refresh token expired. email={}", email);
                 return false;
             }
 
-            log.debug("✅ Refresh token valid for {}", email);
+            log.debug("Refresh token valid. email={}", email);
             return true;
 
         } catch (Exception e) {
-            log.error("❌ Failed to validate refresh token: {}", e.getMessage());
+            log.warn("Refresh token validation failed. reason={}",
+                    e.getClass().getSimpleName());
             return false;
         }
     }

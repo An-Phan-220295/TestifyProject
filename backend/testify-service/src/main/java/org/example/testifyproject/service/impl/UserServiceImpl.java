@@ -49,7 +49,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public SignupResponse saveNewUser(SignupRequest signupRequest) {
+        log.info("Signup request. email={}", signupRequest.getEmail());
+
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
+            log.warn("Signup failed. Email already exists. email={}", signupRequest.getEmail());
             throw new UserIsExistException(signupRequest.getEmail());
         }
 
@@ -60,10 +63,13 @@ public class UserServiceImpl implements UserService {
 
         try {
             User savedUser = userRepository.save(newUser);
+            log.info("User created successfully. email={}", savedUser.getEmail());
             return userMapper.toSignupResponse(savedUser);
         } catch (DataIntegrityViolationException e) {
+            log.warn("Signup failed due to duplicate resource. email={}", signupRequest.getEmail());
             throw new BaseException(StatusCode.DUPLICATE_RESOURCE, "Email or username already exists");
         } catch (Exception e) {
+            log.error("Unexpected error during signup. email={}", signupRequest.getEmail(), e);
             throw new BaseException(StatusCode.INTERNAL_ERROR, "Unexpected error during save user");
         }
     }
@@ -95,6 +101,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public VerifyMailRequest generateConfirmURL(SignupRequest signupRequest, HttpServletRequest request) {
+        log.info("Generate verify email URL. email={}", signupRequest.getEmail());
         String scheme = request.getScheme();
         String serverName = request.getServerName();
         int serverPort = request.getServerPort();
@@ -125,7 +132,7 @@ public class UserServiceImpl implements UserService {
 
             redisService.set(key, email, duration);
         } catch (Exception e) {
-            log.error("❌ Failed to save verify token for email {}: {}", email, e.getMessage());
+            log.error("Failed to save verify token into Redis. email={}", email, e);
         }
     }
 
@@ -135,6 +142,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void verifyAccount(String token) {
+        log.info("Verify account request received");
+
         //Check token trong redis
         String verifyKey = VERIFY_ACCOUNT_PREFIX + token;
         String fallbackKey = FALLBACK_VERIFY_ACCOUNT_PREFIX + token;
@@ -146,22 +155,24 @@ public class UserServiceImpl implements UserService {
         }
 
         if (verifyEmail != null) {
+            log.info("Account verified successfully");
+
             //Doi trang thai account trong db
-            String finalVerifyEmail = verifyEmail;
             User user = userRepository.findByEmail(verifyEmail).orElseThrow(
-                    () -> new UsernameNotFoundException("User not found: " + finalVerifyEmail));
+                    () -> new UsernameNotFoundException("Invalid user or token"));
             user.setEmailVerified(true);
             userRepository.save(user);
             //Xoa 2 token trong redis
             redisService.delete(verifyKey);
             redisService.delete(fallbackKey);
         } else {
+            log.warn("Verify account failed. Invalid or expired token");
             throw new InvalidVerifyEmailTokenException();
         }
     }
 
     private User findCurrentUserByEmail() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+        return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 }

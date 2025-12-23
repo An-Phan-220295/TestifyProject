@@ -1,5 +1,6 @@
 package org.example.testifyproject.security;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,12 +15,10 @@ import java.util.Collection;
  * Spring Security sẽ dùng class này trong Authentication.
  */
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class AppUserDetails implements UserDetails {
 
-//    private String username;
     private String password;
     private String email;
     private boolean enabled;
@@ -30,6 +29,7 @@ public class AppUserDetails implements UserDetails {
         return authorities;
     }
 
+    @JsonIgnore
     @Override
     public String getPassword() {
         return password;
@@ -40,15 +40,14 @@ public class AppUserDetails implements UserDetails {
         return email;
     }
 
-    // --- Các cờ kiểm tra trạng thái tài khoản ---
     @Override
     public boolean isAccountNonExpired() {
-        return true; // có thể thay bằng logic riêng nếu bạn có cột "expired"
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true; // hoặc check từ field "status"
+        return true;
     }
 
     @Override
