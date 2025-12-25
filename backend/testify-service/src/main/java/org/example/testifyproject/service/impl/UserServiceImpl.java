@@ -16,6 +16,7 @@ import org.example.testifyproject.dtos.request.SignupRequest;
 import org.example.testifyproject.dtos.response.SignupResponse;
 import org.example.testifyproject.entity.Role;
 import org.example.testifyproject.entity.User;
+import org.example.testifyproject.entity.enums.UserStatus;
 import org.example.testifyproject.repository.RoleRepository;
 import org.example.testifyproject.repository.UserRepository;
 import org.example.testifyproject.service.FileService;
@@ -158,8 +159,7 @@ public class UserServiceImpl implements UserService {
             log.info("Account verified successfully");
 
             //Doi trang thai account trong db
-            User user = userRepository.findByEmail(verifyEmail).orElseThrow(
-                    () -> new UsernameNotFoundException("Invalid user or token"));
+            User user = userRepository.findByEmail(verifyEmail).orElseThrow(() -> new UsernameNotFoundException("Invalid user or token"));
             user.setEmailVerified(true);
             userRepository.save(user);
             //Xoa 2 token trong redis
@@ -169,6 +169,13 @@ public class UserServiceImpl implements UserService {
             log.warn("Verify account failed. Invalid or expired token");
             throw new InvalidVerifyEmailTokenException();
         }
+    }
+
+    @Override
+    public void lockAccount(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        user.setUserStatus(UserStatus.LOCKED);
+        userRepository.save(user);
     }
 
     private User findCurrentUserByEmail() {

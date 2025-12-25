@@ -18,4 +18,6 @@ public interface UserService {
     VerifyMailRequest generateConfirmURL(SignupRequest signupRequest, HttpServletRequest request);
 
     void verifyAccount(String token);
+
+    void lockAccount(String email);
 }

@@ -15,11 +15,13 @@ public enum StatusCode {
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "Bad request"),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "Unauthorized"),
     FORBIDDEN(HttpStatus.FORBIDDEN, "Forbidden"),
+    LOCKED(HttpStatus.LOCKED, "Account is locked"),
     NOT_FOUND(HttpStatus.NOT_FOUND, "Resource not found"),
     VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "Validation failed"),
     DUPLICATE_RESOURCE(HttpStatus.CONFLICT, "Resource already exists"),
     USER_EXIST(HttpStatus.CONFLICT, "User already exists"),
     INVALID_VERIFY_EMAIL_TOKEN(HttpStatus.BAD_REQUEST, "Invalid verify email token"),
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "Invalid username or password"),
 
     // --- 5xx Server Errors ---
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error"),
