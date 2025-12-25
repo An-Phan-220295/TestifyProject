@@ -12,6 +12,9 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -65,9 +68,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserIsExistException.class)
     public ResponseEntity<?> handleUserIsExistException(UserIsExistException ex, HttpServletRequest http) {
-        return ResponseEntity.internalServerError()
-                .body(setErrorResponse(StatusCode.USER_EXIST, ex.getMessage(), http.getRequestURI()));
+
+        return ResponseEntity
+                .status(StatusCode.USER_EXIST.getHttpStatus())
+                .body(setErrorResponse(
+                        StatusCode.USER_EXIST,
+                        ex.getMessage(),
+                        http.getRequestURI()
+                ));
     }
+
 
     @ExceptionHandler(InvalidVerifyEmailTokenException.class)
     public ResponseEntity<?> handleInvalidVerifyEmailTokenException(InvalidVerifyEmailTokenException ex, HttpServletRequest http) {
@@ -84,4 +94,41 @@ public class GlobalExceptionHandler {
                 .timestamp(Instant.now())
                 .build();
     }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<?> handleBadCredentials(BadCredentialsException ex, HttpServletRequest http) {
+
+        return ResponseEntity
+                .status(StatusCode.INVALID_CREDENTIALS.getHttpStatus())
+                .body(setErrorResponse(
+                        StatusCode.INVALID_CREDENTIALS,
+                        StatusCode.INVALID_CREDENTIALS.getMessage(),
+                        http.getRequestURI()
+                ));
+    }
+
+    @ExceptionHandler(LockedException.class)
+    public ResponseEntity<?> handleLockedException(LockedException ex, HttpServletRequest http) {
+
+        return ResponseEntity
+                .status(StatusCode.LOCKED.getHttpStatus())
+                .body(setErrorResponse(
+                        StatusCode.LOCKED,
+                        StatusCode.LOCKED.getMessage(),
+                        http.getRequestURI()
+                ));
+    }
+
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<?> handleDisabledException(DisabledException ex, HttpServletRequest http) {
+
+        return ResponseEntity
+                .status(StatusCode.FORBIDDEN.getHttpStatus())
+                .body(setErrorResponse(
+                        StatusCode.FORBIDDEN,
+                        "Account is disabled",
+                        http.getRequestURI()
+                ));
+    }
+
 }

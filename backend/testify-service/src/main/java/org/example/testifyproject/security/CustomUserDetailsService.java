@@ -21,7 +21,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Invalid username or password"));
-        boolean enabled = user.getUserStatus() == UserStatus.ACTIVE;
+        boolean enabled = user.getUserStatus() != UserStatus.INACTIVE;
+        boolean nonLocked = user.getUserStatus() != UserStatus.LOCKED;
 
         List<SimpleGrantedAuthority> authorities =
                 List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().getName()));
@@ -30,6 +31,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 user.getPasswordHash(),
                 user.getEmail(),
                 enabled,
+                nonLocked,
                 authorities
         );
     }

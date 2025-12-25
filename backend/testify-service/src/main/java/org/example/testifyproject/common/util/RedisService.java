@@ -6,6 +6,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -29,11 +30,21 @@ public class RedisService {
     public boolean exists(String key) {
         try {
             boolean exists = redisTemplate.hasKey(key);
-            log.debug("🔍 Redis EXISTS key={} => {}", key, exists);
+            log.debug("Redis EXISTS key={} => {}", key, exists);
             return exists;
         } catch (Exception e) {
-            log.error("❌ Failed to check existence of Redis key {}: {}", key, e.getMessage());
+            log.error("Failed to check existence of Redis key {}: {}", key, e.getMessage());
             return false;
         }
+    }
+
+    public Duration checkTTL(String key, TimeUnit unit) {
+        long ttl = redisTemplate.getExpire(key, unit);
+
+        if (ttl < 0) {
+            return null;
+        }
+
+        return Duration.of(ttl, unit.toChronoUnit());
     }
 }

@@ -1,9 +1,13 @@
 package org.example.testifyproject.config;
 
 import lombok.*;
+import org.example.testifyproject.common.util.RedisService;
+import org.example.testifyproject.security.CustomDaoAuthenticationProvider;
+import org.example.testifyproject.security.CustomUserDetailsService;
 import org.example.testifyproject.security.jwt.filter.JwtAccessDeniedHandler;
 import org.example.testifyproject.security.jwt.filter.JwtAuthenticationEntryPoint;
 import org.example.testifyproject.security.jwt.filter.JwtAuthenticationFilter;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,7 +34,8 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationProvider authenticationProvider)
+            throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -46,16 +51,25 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
                         .anyRequest().authenticated())
-                .authenticationProvider(daoAutProvider())
+                .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
     @Bean
-    public AuthenticationProvider daoAutProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
-        return provider;
+    public AuthenticationProvider authenticationProvider(
+            CustomUserDetailsService userDetailsService,
+            PasswordEncoder passwordEncoder,
+            RedisService redisService,
+            ApplicationEventPublisher eventPublisher
+    ) {
+
+        return new CustomDaoAuthenticationProvider(
+                userDetailsService,
+                passwordEncoder,
+                redisService,
+                eventPublisher
+        );
     }
 
     @Bean
