@@ -71,10 +71,10 @@
         <!-- AWS SDK -->
         <Logger name="software.amazon.awssdk" level="WARN"/>
 
-        <!-- Security (JWT, filters) -->
-        <Logger name="org.example.testifyproject.security" level="INFO"/>
+        <!-- Infrastructure (security, redis, s3, mail, etc.) -->
+        <Logger name="org.example.testifyproject.infrastructure" level="INFO"/>
 
-        <!-- Application code -->
+        <!-- Application domain code -->
         <Logger name="org.example.testifyproject" level="INFO"/>
 
         <!-- Root -->

@@ -6,8 +6,6 @@ import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import com.example.testify.libraries.common.exception.BaseException;
 import com.example.testify.libraries.dtos.responses.ErrorResponse;
-import org.example.testifyproject.common.exception.exceptions.InvalidVerifyEmailTokenException;
-import org.example.testifyproject.common.exception.exceptions.UserIsExistException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;

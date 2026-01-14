@@ -2,8 +2,8 @@ package org.example.testifyproject.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.testifyproject.entity.enums.Gender;
-import org.example.testifyproject.entity.enums.UserStatus;
+import org.example.testifyproject.common.constant.Gender;
+import org.example.testifyproject.common.constant.UserStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
