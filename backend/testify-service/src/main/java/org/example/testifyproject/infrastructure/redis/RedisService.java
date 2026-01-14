@@ -23,8 +23,8 @@ public class RedisService {
         return clazz.cast(value);
     }
 
-    public void delete(String key) {
-        redisTemplate.delete(key);
+    public boolean delete(String key) {
+        return  redisTemplate.delete(key);
     }
 
     public boolean exists(String key) {
@@ -46,5 +46,18 @@ public class RedisService {
         }
 
         return Duration.of(ttl, unit.toChronoUnit());
+    }
+
+    public boolean setIfAbsent(String key, Object value, Duration ttl) {
+        Boolean result = redisTemplate.opsForValue().setIfAbsent(key, value, ttl);
+        return Boolean.TRUE.equals(result);
+    }
+
+    public long incrementWithTTL(String key, Duration ttl) {
+        long value = redisTemplate.opsForValue().increment(key);
+        if (value == 1L) {
+            redisTemplate.expire(key, ttl);
+        }
+        return value;
     }
 }
