@@ -2,8 +2,8 @@ package org.example.testifyproject.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.testifyproject.entity.enums.Difficulty;
-import org.example.testifyproject.entity.enums.QuestionType;
+import org.example.testifyproject.common.constant.Difficulty;
+import org.example.testifyproject.common.constant.QuestionType;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
