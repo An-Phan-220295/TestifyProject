@@ -172,13 +172,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void lockAccount(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         user.setUserStatus(UserStatus.LOCKED);
         userRepository.save(user);
     }
 
     private User findCurrentUserByEmail() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 }

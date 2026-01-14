@@ -32,19 +32,18 @@ import java.util.Map;
 public class AuthenController {
     private final AuthenticationManager authManager;
     private final CustomUserDetailsService userDetailsService;
-    private final JwtService jwtUtil;
+    private final JwtService jwtService;
     private final UserService userService;
     private final MailServiceAdapter mailServiceAdapter;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
         log.info("Login request received. email={}", req.getEmail());
-        Authentication auth = authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword()));
+        Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword()));
 
         AppUserDetails user = (AppUserDetails) auth.getPrincipal();
-        String access = jwtUtil.generateAccessToken(user);
-        String refresh = jwtUtil.generateAndSaveRefreshToken(user);
+        String access = jwtService.generateAccessToken(user);
+        String refresh = jwtService.generateAndSaveRefreshToken(user);
         log.info("Login successful. email={}", user.getEmail());
 
         return ResponseEntity.ok(new TokenResponse(access, refresh));
@@ -53,13 +52,11 @@ public class AuthenController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestHeader("Authorization") String authHeader) {
         log.info("Logout request received");
-        boolean result = jwtUtil.logout(authHeader);
+        boolean result = jwtService.logout(authHeader);
 
         if (!result) {
             log.warn("Logout failed due to server error");
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Logout failed due to server error"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "Logout failed due to server error"));
         }
         log.info("Logout successful");
         return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
@@ -71,16 +68,15 @@ public class AuthenController {
 
         String refreshToken = req.getRefreshToken();
 
-        if (!jwtUtil.isRefreshTokenValid(refreshToken)) {
+        if (!jwtService.isRefreshTokenValid(refreshToken)) {
             log.warn("Invalid or expired refresh token");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message", "Invalid or expired refresh token"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid or expired refresh token"));
         }
 
-        String email = jwtUtil.validateAndExtractUsername(refreshToken);
+        String email = jwtService.validateAndExtractUsername(refreshToken);
 
         AppUserDetails user = (AppUserDetails) userDetailsService.loadUserByUsername(email);
-        String newAccess = jwtUtil.generateAccessToken(user);
+        String newAccess = jwtService.generateAccessToken(user);
         log.info("Refresh token successful. email={}", email);
 
         return ResponseEntity.ok(new AccessTokenOnly(newAccess));

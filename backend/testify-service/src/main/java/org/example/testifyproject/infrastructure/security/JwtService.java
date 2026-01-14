@@ -9,9 +9,9 @@ import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.testifyproject.infrastructure.redis.RedisService;
-import org.example.testifyproject.common.constant.TokenType;
 import org.example.testifyproject.auth.security.AppUserDetails;
+import org.example.testifyproject.common.constant.TokenType;
+import org.example.testifyproject.infrastructure.redis.RedisService;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +29,7 @@ public class JwtService {
     private final JwtProperties props;
     private static final String BLACKLIST_PREFIX = "blacklist:";
     private static final String REFRESH_PREFIX = "refresh:";
+    private static final String TOKEN_VERSION_REDIS = "tokenVersion:";
 
     @Getter
     private SecretKey key;
@@ -52,8 +53,12 @@ public class JwtService {
 
         log.debug("Generating access token. email={}", user.getEmail());
 
+        int ver = Integer.parseInt(
+                redisService.get(TOKEN_VERSION_REDIS + user.getEmail(), String.class)
+        );
         return Jwts.builder()
                 .setSubject(user.getEmail())
+                .claim("ver", ver)
                 .claim("roles", user.getAuthorities()
                         .stream()
                         .map(GrantedAuthority::getAuthority)
@@ -100,7 +105,7 @@ public class JwtService {
         Claims c = parseClaims(token);
         String username = c.getSubject();
         // Check token valid
-        return username.equals(user.getEmail()) && !isTokenExpired(token) && !isAccessTokenInBlacklist(token);
+        return username.equals(user.getEmail()) && !isTokenExpired(token) && isValidVersion(token);
     }
 
     public boolean logout(String authHeader) {
@@ -109,18 +114,18 @@ public class JwtService {
 
         log.info("Logout request. email={}", email);
 
-        if (!saveTokenIntoRedis(TokenType.ACCESS_TOKEN, email, token)) {
-            log.warn("Failed to blacklist access token. email={}", email);
+        try {
+            redisService.delete(REFRESH_PREFIX + email);
+
+            redisService.incrementWithTTL(TOKEN_VERSION_REDIS + email
+                    , Duration.ofDays(props.getRefreshTokenDays() + 1)
+            );
+
+            return true;
+        } catch (Exception e) {
+            log.error("Logout failed. email={}", email, e);
             return false;
         }
-
-        if (!removeTokenIntoRedis(email)) {
-            log.warn("Failed to remove refresh token. email={}", email);
-            return false;
-        }
-
-        log.info("Logout successful. email={}", email);
-        return true;
     }
 
 
@@ -150,25 +155,19 @@ public class JwtService {
         }
     }
 
+    private boolean isValidVersion(String token) {
+        Claims claims = parseClaims(token);
 
-    private boolean removeTokenIntoRedis(String email) {
-        try {
-            String key = REFRESH_PREFIX + email;
-            redisService.delete(key);
-            return true;
-        } catch (Exception e) {
-            log.error("Failed to remove refresh token for user {}: {}", email, e.getMessage());
+        int clientTokenVer = (int) claims.get("ver");
+        String email = claims.getSubject();
+
+        String redisVer = redisService.get(TOKEN_VERSION_REDIS + email, String.class);
+        if (redisVer == null) {
             return false;
         }
-    }
 
-    private boolean isAccessTokenInBlacklist(String token) {
-        String key = BLACKLIST_PREFIX + token;
-        boolean exists = redisService.exists(key);
-        if (exists) {
-            log.debug("Token blacklisted: {}", key);
-        }
-        return exists;
+        int currentVersion = Integer.parseInt(redisVer);
+        return clientTokenVer == currentVersion;
     }
 
     private Claims parseClaims(String token) {
