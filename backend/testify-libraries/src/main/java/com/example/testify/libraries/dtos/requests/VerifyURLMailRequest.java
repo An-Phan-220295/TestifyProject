@@ -11,7 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Setter
-public class VerifyMailRequest {
+public class VerifyURLMailRequest {
     @NotEmpty
     private String appName;
 

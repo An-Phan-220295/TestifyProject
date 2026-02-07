@@ -53,9 +53,7 @@ public class JwtService {
 
         log.debug("Generating access token. email={}", user.getEmail());
 
-        int ver = Integer.parseInt(
-                redisService.get(TOKEN_VERSION_REDIS + user.getEmail(), String.class)
-        );
+        int ver = redisService.get(TOKEN_VERSION_REDIS + user.getEmail(), Integer.class);
         return Jwts.builder()
                 .setSubject(user.getEmail())
                 .claim("ver", ver)

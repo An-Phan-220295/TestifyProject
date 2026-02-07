@@ -1,4 +1,4 @@
-package com.example.testify.common.type;
+package com.example.testify.libraries.common.type;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

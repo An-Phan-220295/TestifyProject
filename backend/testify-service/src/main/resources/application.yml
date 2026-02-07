@@ -30,6 +30,8 @@ app:
     issuer: ${JWT_ISSUER:Testify}
     access-token-minutes: ${JWT_AT_MIN:60}
     refresh-token-days: ${JWT_RT_DAYS:7}
+  security:
+    reset-secret: ${RESET_SECRET}
 
 aws:
   s3:
@@ -38,3 +40,4 @@ aws:
       secret-key: ${AWS_SECRET_ACCESS_KEY}
     region: ${AWS_REGION}
     bucket-name: ${S3_BUCKET_NAME}
+

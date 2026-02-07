@@ -1,7 +1,8 @@
 package com.example.testify.controller;
 
 import com.example.testify.libraries.common.util.Util;
-import com.example.testify.libraries.dtos.requests.VerifyMailRequest;
+import com.example.testify.libraries.dtos.requests.Verify8DigitMailRequest;
+import com.example.testify.libraries.dtos.requests.VerifyURLMailRequest;
 import com.example.testify.service.MailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +20,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class MailServiceController {
     private final MailService mailService;
 
-    @PostMapping("/send-verify-email")
-    public ResponseEntity<?> sendVerifyEmail(@Valid @RequestBody VerifyMailRequest verifyMailRequest) throws Exception {
+    @PostMapping("/send-url-verify-email")
+    public ResponseEntity<?> sendVerifyEmail(@Valid @RequestBody VerifyURLMailRequest verifyMailRequest) throws Exception {
         log.info("Received request to send verify email. to={}", verifyMailRequest.getToAddress());
-        mailService.sendVerifyEmail(verifyMailRequest);
+        mailService.sendURLVerifyEmail(verifyMailRequest);
+        return Util.successResponse("");
+    }
+
+    @PostMapping("/send-8-digit-verify-email")
+    public ResponseEntity<?> sendVerifyEmail(@Valid @RequestBody Verify8DigitMailRequest request) throws Exception {
+        log.info("Received request to send 8 digit verify email. to={}", request.getToAddress());
+        mailService.send8DigitVerifyEmail(request);
         return Util.successResponse("");
     }
 }
