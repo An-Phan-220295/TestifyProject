@@ -1,19 +1,19 @@
 package org.example.testifyproject.auth.controller;
 
 import com.example.testify.libraries.common.util.Util;
-import com.example.testify.libraries.dtos.requests.VerifyMailRequest;
+import com.example.testify.libraries.dtos.requests.VerifyURLMailRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.testifyproject.infrastructure.mail.MailServiceAdapter;
 import org.example.testifyproject.auth.dto.request.AccessTokenOnly;
 import org.example.testifyproject.auth.dto.request.LoginRequest;
 import org.example.testifyproject.auth.dto.request.RefreshRequest;
-import org.example.testifyproject.auth.dto.response.TokenResponse;
 import org.example.testifyproject.auth.dto.request.SignupRequest;
+import org.example.testifyproject.auth.dto.response.TokenResponse;
 import org.example.testifyproject.auth.security.AppUserDetails;
 import org.example.testifyproject.auth.security.CustomUserDetailsService;
+import org.example.testifyproject.infrastructure.mail.MailServiceAdapter;
 import org.example.testifyproject.infrastructure.security.JwtService;
 import org.example.testifyproject.user.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -88,9 +88,9 @@ public class AuthenController {
 
         userService.saveNewUser(signupRequest);
 
-        VerifyMailRequest verifyMailRequest = userService.generateConfirmURL(signupRequest, request);
+        VerifyURLMailRequest verifyMailRequest = userService.generateConfirmURL(signupRequest, request);
 
-        String result = mailServiceAdapter.sendEmail(verifyMailRequest).getBody();
+        String result = mailServiceAdapter.sendURLVerifyEmail(verifyMailRequest).getBody();
 
         log.info("Signup successful, verification email sent. email={}", signupRequest.getEmail());
 

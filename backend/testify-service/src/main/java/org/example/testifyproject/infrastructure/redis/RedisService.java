@@ -55,7 +55,7 @@ public class RedisService {
 
     public long incrementWithTTL(String key, Duration ttl) {
         long value = redisTemplate.opsForValue().increment(key);
-        if (value == 1L) {
+        if (value == 1) {
             redisTemplate.expire(key, ttl);
         }
         return value;

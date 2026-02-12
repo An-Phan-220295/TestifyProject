@@ -24,7 +24,6 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Invalid username or password"));
-        boolean enabled = user.getUserStatus() != UserStatus.INACTIVE;
         boolean nonLocked = user.getUserStatus() != UserStatus.LOCKED;
 
         List<SimpleGrantedAuthority> authorities =
@@ -32,14 +31,14 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         redisService.setIfAbsent(
                 "tokenVersion:" + email,
-                "1",
+                1,
                 Duration.ofDays(30)
         );
 
         return new AppUserDetails(
                 user.getPasswordHash(),
                 user.getEmail(),
-                enabled,
+                user.getEmailVerified(),
                 nonLocked,
                 authorities
         );

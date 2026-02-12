@@ -2,24 +2,25 @@ package org.example.testifyproject.user.service;
 
 import com.example.testify.libraries.common.enums.StatusCode;
 import com.example.testify.libraries.common.exception.BaseException;
-import com.example.testify.libraries.dtos.requests.VerifyMailRequest;
+import com.example.testify.libraries.common.util.Util;
+import com.example.testify.libraries.dtos.requests.VerifyURLMailRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.testifyproject.auth.dto.request.SignupRequest;
+import org.example.testifyproject.auth.dto.response.SignupResponse;
+import org.example.testifyproject.common.constant.UserStatus;
 import org.example.testifyproject.common.exception.InvalidVerifyEmailTokenException;
 import org.example.testifyproject.common.exception.RoleNotFoundException;
 import org.example.testifyproject.common.exception.UserIsExistException;
 import org.example.testifyproject.common.util.mapper.UserMapper;
-import org.example.testifyproject.infrastructure.redis.RedisService;
-import org.example.testifyproject.file.dto.request.SaveAvatarConfirmRequest;
-import org.example.testifyproject.auth.dto.request.SignupRequest;
-import org.example.testifyproject.auth.dto.response.SignupResponse;
 import org.example.testifyproject.entity.Role;
 import org.example.testifyproject.entity.User;
-import org.example.testifyproject.common.constant.UserStatus;
+import org.example.testifyproject.file.dto.request.SaveAvatarConfirmRequest;
+import org.example.testifyproject.file.service.FileService;
+import org.example.testifyproject.infrastructure.redis.RedisService;
 import org.example.testifyproject.user.repository.RoleRepository;
 import org.example.testifyproject.user.repository.UserRepository;
-import org.example.testifyproject.file.service.FileService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -100,7 +101,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public VerifyMailRequest generateConfirmURL(SignupRequest signupRequest, HttpServletRequest request) {
+    public VerifyURLMailRequest generateConfirmURL(SignupRequest signupRequest, HttpServletRequest request) {
         log.info("Generate verify email URL. email={}", signupRequest.getEmail());
         String scheme = request.getScheme();
         String serverName = request.getServerName();
@@ -111,8 +112,8 @@ public class UserServiceImpl implements UserService {
 
         String email = signupRequest.getEmail();
         //Generate verify va fallback token
-        String verifyToken = generateToken();
-        String fallbackToken = generateToken();
+        String verifyToken = Util.generateToken();
+        String fallbackToken = Util.generateToken();
 
         //Generate 2 url
         String verifyURL = appUrl + "/auth/verify-account/" + verifyToken;
@@ -122,7 +123,8 @@ public class UserServiceImpl implements UserService {
         saveVerifyTokenRedis(email, verifyToken, VERIFY_ACCOUNT_PREFIX);
         saveVerifyTokenRedis(email, fallbackToken, FALLBACK_VERIFY_ACCOUNT_PREFIX);
 
-        return VerifyMailRequest.builder().appName(appName).toAddress(email).verifyLink(verifyURL).fallbackLink(fallbackURL).minuteExpireTime(TOKEN_DURATION_MINUTE).build();
+        return VerifyURLMailRequest.builder().appName(appName).toAddress(email).verifyLink(verifyURL)
+                .fallbackLink(fallbackURL).minuteExpireTime(TOKEN_DURATION_MINUTE).build();
     }
 
     private void saveVerifyTokenRedis(String email, String token, String prefix) {
@@ -136,9 +138,6 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private String generateToken() {
-        return UUID.randomUUID().toString();
-    }
 
     @Override
     public void verifyAccount(String token) {
@@ -172,15 +171,23 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void lockAccount(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         user.setUserStatus(UserStatus.LOCKED);
         userRepository.save(user);
     }
 
+    @Override
+    public boolean userIsExist(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    @Override
+    public int saveNewPassword(String newPassword, String email) {
+        return userRepository.saveNewPassword(newPassword, email);
+    }
+
     private User findCurrentUserByEmail() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 }
